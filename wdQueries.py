@@ -23,6 +23,6 @@ ORDER BY DESC( COUNT( ?sitelink ) ) #sort by number of sitelinks for each item
 cemeteries = """SELECT DISTINCT ?item ?itemLabel ?coordLocation WHERE {{
   ?item wdt:P31 wd:Q39614. #instance of cemetery
   ?item wdt:P131+ wd:{0}. #located in brooklyn or area in brooklyn
-  ?item wdt:P625 ?coordLocation.
+  OPTIONAL{{?item wdt:P625 ?coordLocation.}}
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }}
 }}"""
