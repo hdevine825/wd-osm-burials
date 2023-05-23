@@ -11,6 +11,42 @@ def extractQID(s):
 	end = len(s)
 	s = s[start:end]
 	return s
+	
+def osmToDF(result, tagArray):
+	columns = tagArray.copy()
+	columns.insert(0, 'id')
+	columns.insert(1, 'geom')
+	df = pd.DataFrame()
+	for i in result.nodes:
+		rowValues = []
+		rowValues.append('n'+str(i.id))
+		rowValues.append("POINT ({0} {1})".format(i.lat, i.lon))
+		for t in tagArray:
+			rowValues.append(i.tags.get(t))
+		rvdf = pd.DataFrame(rowValues).T
+		df = pd.concat([df,rvdf])
+	for i in result.ways:
+		rowValues = []
+		rowValues.append('w'+str(i.id))
+		rowValues.append("POINT ({0} {1})".format(i.center_lat, i.center_lon))
+		for t in tagArray:
+			rowValues.append(i.tags.get(t))
+		rvdf = pd.DataFrame(rowValues).T
+		df = pd.concat([df,rvdf])
+	for i in result.relations:
+		rowValues = []
+		rowValues.append('r'+str(i.id))
+		rowValues.append("POINT ({0} {1})".format(i.center_lat, i.center_lon))
+		for t in tagArray:
+			rowValues.append(i.tags.get(t))
+		rvdf = pd.DataFrame(rowValues).T
+		df = pd.concat([df,rvdf])
+	print(df.shape)
+	df.set_axis(columns,axis=1,inplace=True)
+	return df
+		
+		
+		
 
 overpass = overpy.Overpass()
 
@@ -38,4 +74,6 @@ print("Wikidata returned {0} cemeteries".format(wdcemdf.shape[0]))
 
 osmcem = overpass.query(overpassQueries.cemeteries.format(config.city))
 print("Cemeteries on OSM: {0} nodes, {1} ways, {2} relations".format(len(osmcem.nodes),len(osmcem.ways),len(osmcem.relations)))
+osmcemdf = osmToDF(osmcem, ['name','wikidata'])
+print(osmcemdf.head())
 
